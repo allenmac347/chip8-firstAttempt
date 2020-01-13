@@ -1,0 +1,5 @@
+memory - 4096
+35 opcodes
+fetch decode execute
+byte addressable
+address corresponds to a byte (neigborhood is memory, street address is memory address, size of house/whats in the house is the size of byte/contents of byte located at the memory address )

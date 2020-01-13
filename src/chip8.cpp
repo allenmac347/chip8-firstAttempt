@@ -1,0 +1,157 @@
+#include "chip8.h"
+
+Chip8::Chip8(){
+    /*All programs will start at memory location 512 or 0x200*/
+    pc = 0x200; 
+    /*Dummy placeholder for opcode*/
+    opcode = 0; 
+    I = 0 ; 
+    /*Using the first stack frame*/
+    sp = 0; 
+
+}
+
+Chip8::nextCylce(){
+    //fetch and combine opcodes
+    opcode = memory[pc]; 
+    opcode = opcode << 8; 
+    opcode = opcode | memory[pc + 1]; 
+
+    //Decode opcode
+    switch((opcode & 0xf000) >> 12) {
+        //execute opcode
+        case 0:
+            switch(opcode & 0x0fff){
+                //TODO: Do we have to set display flag?
+                case 0x00e0:
+                    //Clear the display
+                    clearDisp(); 
+                    break;
+                case 0x00ee:
+                    //Return to address stored on previous stack frame
+                    pc = stack[sp];
+                    //Move our stack pointer to the previous stack frame
+                    sp--; 
+                    if(sp < 0){
+                        std::cout << "Error, deallocated our base stack frame, PC jumped to junk address"
+                    }
+                    pc = pc - 2; 
+                    break;
+                default:
+                    pc = opcode & 0x0fff; 
+                    pc = pc - 2; 
+                    break; 
+            }
+            break;
+        case 0x1:
+            pc = opcode & 0x0fff; 
+            pc = pc - 2; 
+            break; 
+        case 0x2:
+            //Make a new stack frame
+            sp++; 
+            if(15 < sp){
+                std::cout << "Error, unable to allocate space on the stack"
+            }
+            //Save the address of previous stack frame onto our new stack frame
+            stack[sp] = pc; 
+            pc = opcode & 0x0fff; 
+            pc = pc - 2; 
+            break; 
+        case 0x3:
+            if(V[opcode & 0x0f00 >> 8] == (opcode & 0x00ff)){
+                pc = pc + 2; 
+            }
+            break; 
+        case 0x4:
+            if(V[opcode & 0x0f00 >> 8] != (opcode & 0x00ff)){
+                pc = pc + 2; 
+            }
+            break;
+        case 0x5:
+            if(V[opcode & 0x0f00 >> 8] == V[opcode & 0x00f0 >> 4]){
+                pc = pc + 2; 
+            }
+            break; 
+        case 0x6:
+            V[opcode & 0x0f00 >> 8] = opcode & 0x00ff; 
+            break; 
+        case 0x7:
+            V[opcode & 0x0f00 >> 8] += opcode & 0x00ff; 
+            break; 
+        case 0x8:
+            switch(opcode & 0x000f){
+                case 0x0:
+                    V[opcode & 0x0f00 >> 8] = V[opcode & 0x00f0 >> 4]; 
+                    break;
+                case 0x1:
+                    V[opcode & 0x0f00 >> 8] = V[opcode & 0x0f00 >> 8] | V[opcode & 0x00f0 >> 4];
+                    break;
+                case 0x2:
+                    V[opcode & 0x0f00 >> 8] = V[opcode & 0x0f00 >> 8] & V[opcode & 0x00f0 >> 4];
+                    break;
+                case 0x3:
+                    V[opcode & 0x0f00 >> 8] = V[opcode & 0x0f00 >> 8] ^ V[opcode & 0x00f0 >> 4];
+                    break;
+                case 0x4:
+                    if(V[opcode &  0x0f00 >> 8] + V[opcode & 0x00f0 >> 4] > 255){
+                        V[0xf] = 1; 
+                    }
+                    else{
+                        V[0xf] = 0; 
+                    }
+                    V[opcode & 0x0f00 >> 8] = (V[opcode &  0x0f00 >> 8] + V[opcode & 0x00f0 >> 4]) % 0xff; 
+                    break;
+                case 0x5:
+                    if(V[opcode &  0x0f00 >> 8] - V[opcode & 0x00f0 >> 4] < 0){
+                        V[0xf] = 0;
+                    }
+                    else{
+                        V[0xf] = 1; 
+                    }
+                    V[opcode & 0x0f00 >> 8] = (V[opcode &  0x0f00 >> 8] - V[opcode & 0x00f0 >> 4]) % 0xff; 
+                    break;
+                case 0x6:
+                    V[0xf] = V[opcode 0x0f00 >> 8] & 0b1; 
+                    V[opcode 0x0f00 >> 8] = V[opcode 0x0f00 >> 8] >> 1
+                    break;
+                case 0x7:
+                    if(V[opcode &  0x0f00 >> 4] - V[opcode & 0x00f0 >> 8] < 0){
+                        V[0xf] = 0;
+                    }
+                    else{
+                        V[0xf] = 1; 
+                    }
+                    V[opcode & 0x0f00 >> 8] = (V[opcode &  0x0f00 >> 4] - V[opcode & 0x00f0 >> 8]) % 0xff; 
+                    break;
+                case 0xe: 
+                    V[0xf] = V[opcode & 0x0f00 >> 8] & 0x8; 
+                    V[opcode & 0x0f00 >> 8] << 1; 
+                    break;
+            }
+            break;
+        case 0x9:
+            if(V[opcode &  0x0f00 >> 8] != V[opcode & 0x00f0 >> 4]){
+                pc = pc + 2; 
+            }
+            break; 
+        case 0xa:
+            I = opcode & 0x0fff;
+            break; 
+        case 0xb:
+            pc = V[0] + (opcode & 0xfff); 
+            pc = pc - 2; 
+            break; 
+        case 0xc:
+            V[opcode &  0x0f00 >> 8] = (rand() % 255 + 1) & (opcode & 0xff); 
+            break;
+        case 0xd:
+            draw(V[opcode & 0x0f00 >> 8], V[opcode & 0x00f0 >> 4], opcode & 0xf); 
+            break; 
+        case 0xe:
+            break; 
+        case 0xf:
+            break;
+    }
+    pc = pc + 2; 
+}
