@@ -35,7 +35,7 @@ def returnSubroutine(stackFrame, stackPointer, pc):
     pc[0] = pc[0] - 2
 
 print("Running Test 2: Stack Frame I")
-#Basic test on stack frames calling two different subroutines
+#Basic test on stack frames calling two different subroutines. Two levels deep in terms of recursion. Base calls call1, within call1 the function calls call2
 stack = [0, 0, 0, 0]
 sp = [0]
 startAddress = 0xaaa
@@ -63,7 +63,7 @@ call1Address = 0x2bbb
 call2Address = 0x2ccc
 pc = [0xaaa]
 
-#Putting the same function on the stack twice
+#Putting the same function on the stack twice. Three levels deep of recursion. Base calls call1, call1 calls call2, and call2 calls call1
 callSubroutine(stack, sp, pc, call1Address)
 pc[0] += 2
 assert pc[0] == 0xbbb
