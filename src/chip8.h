@@ -48,6 +48,8 @@ class Chip8{
 
         void nextCylce(); 
 
+        void detectKeyPress();
+
         void clearDisp(); 
 
         void draw(unsigned char v_x, unsigned char v_y, unsigned char height); 

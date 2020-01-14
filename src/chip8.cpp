@@ -28,7 +28,7 @@ Chip8::nextCylce(){
                     clearDisp(); 
                     break;
                 case 0x00ee:
-                    //Return to address stored on previous stack frame
+                    //Return to address stored on current stack frame
                     pc = stack[sp];
                     //Move our stack pointer to the previous stack frame
                     sp--; 
@@ -53,7 +53,7 @@ Chip8::nextCylce(){
             if(15 < sp){
                 std::cout << "Error, unable to allocate space on the stack"
             }
-            //Save the address of previous stack frame onto our new stack frame
+            //Save the address of last executed instruction on previous stack frame onto our new stack frame
             stack[sp] = pc; 
             pc = opcode & 0x0fff; 
             pc = pc - 2; 
@@ -80,7 +80,7 @@ Chip8::nextCylce(){
             V[opcode & 0x0f00 >> 8] += opcode & 0x00ff; 
             break; 
         case 0x8:
-            switch(opcode & 0x000f){
+            switch(opcode & 0xf){
                 case 0x0:
                     V[opcode & 0x0f00 >> 8] = V[opcode & 0x00f0 >> 4]; 
                     break;
@@ -149,9 +149,83 @@ Chip8::nextCylce(){
             draw(V[opcode & 0x0f00 >> 8], V[opcode & 0x00f0 >> 4], opcode & 0xf); 
             break; 
         case 0xe:
+            switch(opcode & 0xf){
+                case 0xe:
+                    break; 
+                case 0x1:
+                    break; 
+            }
             break; 
         case 0xf:
+            switch(opcode & 0xff){
+                case 0x7:
+                    break;
+                case 0xa:
+                    break;  
+                case 0x15:
+                    break; 
+                case 0x18:
+                    break; 
+                case 0x1e:
+                    break; 
+                case 0x29:
+                    break; 
+                case 0x33:
+                    break;
+                case 0x55:
+                    break; 
+                case 0x65:
+                    break;  
+                    
+            }
             break;
     }
     pc = pc + 2; 
+}
+
+Chip8::detectKeyPress(){
+
+}
+
+Chip8::clearDisp(){
+    for(int i = 0; i < graphics.size(); i++){
+        graphics[i] = 0; 
+    }
+}
+
+Chip8::draw(unsigned char v_x, unsigned char v_y, unsigned char height){
+    /*Pixels are usually displayed as follows
+    0 1 2 3 4
+    5 6 7 8 9*
+    These pixels are then stored in a 1d array where the corresponding pixel map is
+    0 1 2 3 4 5 6 7 8 9*/
+    bool collision = false; 
+    for(unsigned char h = 0; h < height; h++){
+        //Sprite data for a row of 8 pixels
+        unsigned char row = memory[I + h]; 
+        unsigned char startPos = (v_y + h)*64 + v_x; 
+        //All sprites are 8 pixels wide
+        for(unsigned char offset = 0; offset < 8; offset++){
+        //XOR logic. Detects collisions
+            if(graphics[startPos + offset] == 1){
+                if(row & (0x80 >> offset) > 0){
+                    graphics[startPos + offset] = 0; 
+                    collision = true; 
+                }
+            }
+            else{
+                if(row & (0x80 >> offset) > 0){
+                    graphics[startPos + offset] = 1; 
+                }
+            }
+
+        }
+    }
+    if(collision){
+        V[0xf] = 1; 
+    }
+    else{
+        V[0xf] = 0; 
+    }
+    //TODO: Send graphics map to SDL
 }
