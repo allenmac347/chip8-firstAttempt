@@ -94,3 +94,72 @@ assert callSubroutine(stack, sp, pc, call1Address) == 0
 pc[0] += 2
 print("Passed Test 2")
 print("\n")
+
+print("Running Test 3: Binary-Coded Decimal")
+#Decimal value of 171
+testVal = 0xab
+rightDigit = testVal % 10
+testVal = (testVal - (testVal % 10)) / 10
+middleDigit = testVal % 10
+testVal = (testVal - (testVal % 10)) / 10
+leftDigit = testVal % 10
+assert rightDigit == 1
+assert middleDigit == 7
+assert leftDigit == 1
+
+#Decimal value of 109
+testVal = 0x6d
+rightDigit = testVal % 10
+testVal = (testVal - (testVal % 10)) / 10
+middleDigit = testVal % 10
+testVal = (testVal - (testVal % 10)) / 10
+leftDigit = testVal % 10
+assert rightDigit == 9
+assert middleDigit == 0
+assert leftDigit == 1
+
+#Decimal value of 230
+testVal = 0xe6
+rightDigit = testVal % 10
+testVal = (testVal - (testVal % 10)) / 10
+middleDigit = testVal % 10
+testVal = (testVal - (testVal % 10)) / 10
+leftDigit = testVal % 10
+assert rightDigit == 0
+assert middleDigit == 3
+assert leftDigit == 2
+
+#Decimal value of 11
+testVal = 0xb
+rightDigit = testVal % 10
+testVal = (testVal - (testVal % 10)) / 10
+middleDigit = testVal % 10
+testVal = (testVal - (testVal % 10)) / 10
+leftDigit = testVal % 10
+assert rightDigit == 1
+assert middleDigit == 1
+assert leftDigit == 0
+
+#Decimal value of 1
+testVal = 0x1
+rightDigit = testVal % 10
+testVal = (testVal - (testVal % 10)) / 10
+middleDigit = testVal % 10
+testVal = (testVal - (testVal % 10)) / 10
+leftDigit = testVal % 10
+assert rightDigit == 1
+assert middleDigit == 0
+assert leftDigit == 0
+
+#Decimal value of 239
+testVal = 0xef
+rightDigit = testVal % 10
+testVal = (testVal - (testVal % 10)) / 10
+middleDigit = testVal % 10
+testVal = (testVal - (testVal % 10)) / 10
+leftDigit = testVal % 10
+assert rightDigit == 9
+assert middleDigit == 3
+assert leftDigit == 2
+print("Passed Test 3s")
+print("\n")

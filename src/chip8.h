@@ -50,6 +50,8 @@ class Chip8{
 
         void detectKeyPress();
 
+        void waitKeyPress()
+
         void clearDisp(); 
 
         void draw(unsigned char v_x, unsigned char v_y, unsigned char height); 

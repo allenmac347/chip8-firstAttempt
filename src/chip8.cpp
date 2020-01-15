@@ -26,6 +26,7 @@ Chip8::nextCylce(){
                 case 0x00e0:
                     //Clear the display
                     clearDisp(); 
+                    pc = pc + 2;
                     break;
                 case 0x00ee:
                     //Return to address stored on current stack frame
@@ -35,17 +36,14 @@ Chip8::nextCylce(){
                     if(sp < 0){
                         std::cout << "Error, deallocated our base stack frame, PC jumped to junk address"
                     }
-                    pc = pc - 2; 
                     break;
                 default:
                     pc = opcode & 0x0fff; 
-                    pc = pc - 2; 
                     break; 
             }
             break;
         case 0x1:
             pc = opcode & 0x0fff; 
-            pc = pc - 2; 
             break; 
         case 0x2:
             //Make a new stack frame
@@ -56,42 +54,53 @@ Chip8::nextCylce(){
             //Save the address of last executed instruction on previous stack frame onto our new stack frame
             stack[sp] = pc; 
             pc = opcode & 0x0fff; 
-            pc = pc - 2; 
             break; 
         case 0x3:
             if(V[opcode & 0x0f00 >> 8] == (opcode & 0x00ff)){
+                //Skip next instruction 
                 pc = pc + 2; 
             }
+            pc = pc + 2; 
             break; 
         case 0x4:
             if(V[opcode & 0x0f00 >> 8] != (opcode & 0x00ff)){
+                //Skip next instruction
                 pc = pc + 2; 
             }
+            pc = pc + 2
             break;
         case 0x5:
             if(V[opcode & 0x0f00 >> 8] == V[opcode & 0x00f0 >> 4]){
+                //Skip next instruction
                 pc = pc + 2; 
             }
+            pc = pc + 2; 
             break; 
         case 0x6:
             V[opcode & 0x0f00 >> 8] = opcode & 0x00ff; 
+            pc = pc + 2; 
             break; 
         case 0x7:
             V[opcode & 0x0f00 >> 8] += opcode & 0x00ff; 
+            pc = pc + 2; 
             break; 
         case 0x8:
             switch(opcode & 0xf){
                 case 0x0:
                     V[opcode & 0x0f00 >> 8] = V[opcode & 0x00f0 >> 4]; 
+                    pc = pc + 2; 
                     break;
                 case 0x1:
                     V[opcode & 0x0f00 >> 8] = V[opcode & 0x0f00 >> 8] | V[opcode & 0x00f0 >> 4];
+                    pc = pc + 2;
                     break;
                 case 0x2:
                     V[opcode & 0x0f00 >> 8] = V[opcode & 0x0f00 >> 8] & V[opcode & 0x00f0 >> 4];
+                    pc = pc + 2;
                     break;
                 case 0x3:
                     V[opcode & 0x0f00 >> 8] = V[opcode & 0x0f00 >> 8] ^ V[opcode & 0x00f0 >> 4];
+                    pc = pc + 2;
                     break;
                 case 0x4:
                     if(V[opcode &  0x0f00 >> 8] + V[opcode & 0x00f0 >> 4] > 255){
@@ -101,6 +110,7 @@ Chip8::nextCylce(){
                         V[0xf] = 0; 
                     }
                     V[opcode & 0x0f00 >> 8] = (V[opcode &  0x0f00 >> 8] + V[opcode & 0x00f0 >> 4]) % 0xff; 
+                    pc = pc + 2; 
                     break;
                 case 0x5:
                     if(V[opcode &  0x0f00 >> 8] - V[opcode & 0x00f0 >> 4] < 0){
@@ -110,10 +120,12 @@ Chip8::nextCylce(){
                         V[0xf] = 1; 
                     }
                     V[opcode & 0x0f00 >> 8] = (V[opcode &  0x0f00 >> 8] - V[opcode & 0x00f0 >> 4]) % 0xff; 
+                    pc = pc + 2; 
                     break;
                 case 0x6:
                     V[0xf] = V[opcode 0x0f00 >> 8] & 0b1; 
                     V[opcode 0x0f00 >> 8] = V[opcode 0x0f00 >> 8] >> 1
+                    pc = pc + 2; 
                     break;
                 case 0x7:
                     if(V[opcode &  0x0f00 >> 4] - V[opcode & 0x00f0 >> 8] < 0){
@@ -123,36 +135,44 @@ Chip8::nextCylce(){
                         V[0xf] = 1; 
                     }
                     V[opcode & 0x0f00 >> 8] = (V[opcode &  0x0f00 >> 4] - V[opcode & 0x00f0 >> 8]) % 0xff; 
+                    pc = pc + 2; 
                     break;
                 case 0xe: 
                     V[0xf] = V[opcode & 0x0f00 >> 8] & 0x8; 
                     V[opcode & 0x0f00 >> 8] << 1; 
+                    pc = pc + 2; 
                     break;
             }
             break;
         case 0x9:
             if(V[opcode &  0x0f00 >> 8] != V[opcode & 0x00f0 >> 4]){
+                //Skip next instruction 
                 pc = pc + 2; 
             }
+            pc = pc + 2; 
             break; 
         case 0xa:
             I = opcode & 0x0fff;
+            pc = pc + 2; 
             break; 
         case 0xb:
             pc = V[0] + (opcode & 0xfff); 
-            pc = pc - 2; 
             break; 
         case 0xc:
             V[opcode &  0x0f00 >> 8] = (rand() % 255 + 1) & (opcode & 0xff); 
+            pc = pc + 2; 
             break;
         case 0xd:
             draw(V[opcode & 0x0f00 >> 8], V[opcode & 0x00f0 >> 4], opcode & 0xf); 
+            pc = pc + 2; 
             break; 
         case 0xe:
             switch(opcode & 0xf){
                 case 0xe:
+                    pc = pc + 2;
                     break; 
                 case 0x1:
+                    pc = pc + 2; 
                     break; 
             }
             break; 
@@ -171,6 +191,12 @@ Chip8::nextCylce(){
                 case 0x29:
                     break; 
                 case 0x33:
+                    unsigned char val = V[opcode & 0xf00 >> 8]; 
+                    memory[I + 2] = val % 10; 
+                    val = (val - (val % 10)) / 10; 
+                    memory[I + 1] = (val % 10); 
+                    val = (val - (val % 10)) / 10; 
+                    memory[I] = val % 10; 
                     break;
                 case 0x55:
                     break; 
@@ -180,10 +206,13 @@ Chip8::nextCylce(){
             }
             break;
     }
-    pc = pc + 2; 
 }
 
 Chip8::detectKeyPress(){
+
+}
+
+Chip8::waitKeyPress(){
 
 }
 
